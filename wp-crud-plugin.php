@@ -175,3 +175,26 @@ function custom_data_edit_page() {
     echo '</form>';
     echo '</div>';
 }
+
+/**
+ * Deleting custon data
+ */
+function delete_custom_data() {
+    check_ajax_referer('delete_custom_data_nonce', 'nonce');
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'custom_data';
+    $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+
+    $result = $wpdb->delete($table_name, array('id' => $id));
+    wp_send_json_success($result);
+}
+add_action('wp_ajax_delete_custom_data', 'delete_custom_data');
+
+function custom_data_admin_scripts() {
+    wp_enqueue_script('custom-data', plugin_dir_url( __FILE__ ) . '/assets/js/custom-data.js', array('jquery'), false, true);
+    wp_localize_script('custom-data', 'customData', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'delete_nonce' => wp_create_nonce('delete_custom_data_nonce')
+    ));
+}
+add_action('admin_enqueue_scripts', 'custom_data_admin_scripts');
