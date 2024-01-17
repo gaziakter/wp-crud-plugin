@@ -88,8 +88,45 @@ function custom_data_page() {
     echo '</div>';
 }
 
+/**
+ * Adding New Custom Data
+ */
 function custom_data_add_page() {
-    // Add new custom data page content
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'custom_data';
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['custom_data_nonce']) && wp_verify_nonce($_POST['custom_data_nonce'], 'custom_data_add')) {
+        $title = sanitize_text_field($_POST['title']);
+        $content = sanitize_textarea_field($_POST['content']);
+        $created_at = current_time('mysql');
+        $updated_at = current_time('mysql');
+
+        $wpdb->insert($table_name, compact('title', 'content', 'created_at', 'updated_at'));
+
+        echo '<div class="notice notice-success is-dismissible"><p>Custom data added successfully!</p></div>';
+        echo '<script>window.location.href="' . admin_url('admin.php?page=custom-data') . '";</script>';
+    }
+
+    echo '<div class="wrap">';
+    echo '<h1 class="wp-heading-inline">Add New Custom Data</h1>';
+    echo '<hr class="wp-header-end">';
+
+    echo '<form method="post">';
+    echo '<table class="form-table">';
+    echo '<tr>';
+    echo '<th scope="row"><label for="title">Title</label></th>';
+    echo '<td><input name="title" type="text" id="title" class="regular-text" required></td>';
+    echo '</tr>';
+    echo '<tr>';
+    echo '<th scope="row"><label for="content">Content</label></th>';
+    echo '<td><textarea name="content" id="content" class="large-text" rows="10" required></textarea></td>';
+    echo '</tr>';
+    echo '</table>';
+
+    echo '<input type="hidden" name="custom_data_nonce" value="' . wp_create_nonce('custom_data_add') . '">';
+    echo '<p class="submit"><input type="submit" name="submit" id="submit" class="button button-primary" value="Add New"></p>';
+    echo '</form>';
+    echo '</div>';
 }
 
 function custom_data_edit_page() {
