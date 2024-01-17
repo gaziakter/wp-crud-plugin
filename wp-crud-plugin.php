@@ -16,7 +16,7 @@ Domain Path: /languages/
  */
 function wp_crud_activation(){
     global $wpdb;
-    $table_name = $wpdb->prefix . 'crud_data';
+    $table_name = $wpdb->prefix . 'custom_data';
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name (
@@ -56,8 +56,36 @@ function custom_data_menu() {
 add_action('admin_menu', 'custom_data_menu');
 
 
+
+/**
+ * Display custon data in the admin area
+ */
 function custom_data_page() {
-    // Main custom data management page content
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'custom_data';
+    $results = $wpdb->get_results("SELECT * FROM $table_name ORDER BY created_at DESC");
+
+    echo '<div class="wrap">';
+    echo '<h1 class="wp-heading-inline">Custom Data</h1>';
+    echo '<a href="' . admin_url('admin.php?page=custom-data-add') . '" class="page-title-action">Add New</a>';
+    echo '<hr class="wp-header-end">';
+
+    echo '<table class="wp-list-table widefat fixed striped">';
+    echo '<thead><tr><th>Title</th><th>Content</th><th>Created At</th><th>Updated At</th><th>Actions</th></tr></thead>';
+    echo '<tbody>';
+
+    foreach ($results as $row) {
+        echo '<tr>';
+        echo '<td>' . esc_html($row->title) . '</td>';
+        echo '<td>' . esc_html($row->content) . '</td>';
+        echo '<td>' . esc_html($row->created_at) . '</td>';
+        echo '<td>' . esc_html($row->updated_at) . '</td>';
+        echo '<td><a href="' . admin_url('admin.php?page=custom-data-edit&id=' . $row->id) . '">Edit</a> | <a href="#" class="delete-link" data-id="' . $row->id . '">Delete</a></td>';
+        echo '</tr>';
+    }
+    echo '</tbody>';
+    echo '</table>';
+    echo '</div>';
 }
 
 function custom_data_add_page() {
