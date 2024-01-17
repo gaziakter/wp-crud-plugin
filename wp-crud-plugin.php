@@ -129,6 +129,49 @@ function custom_data_add_page() {
     echo '</div>';
 }
 
+/**
+ * Editing and Updating custom data
+ */
 function custom_data_edit_page() {
-    // Edit custom data page content
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'custom_data';
+    $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    $row = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id));
+
+    if (!$row) {
+        echo '<div class="notice notice-error is-dismissible"><p>Invalid custom data ID!</p></div>';
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['custom_data_nonce']) && wp_verify_nonce($_POST['custom_data_nonce'], 'custom_data_edit')) {
+        $title = sanitize_text_field($_POST['title']);
+        $content = sanitize_textarea_field($_POST['content']);
+        $updated_at = current_time('mysql');
+
+        $wpdb->update($table_name, compact('title', 'content', 'updated_at'), array('id' => $id));
+
+        echo '<div class="notice notice-success is-dismissible"><p>Custom data updated successfully!</p></div>';
+        echo '<script>window.location.href="' . admin_url('admin.php?page=custom-data') . '";</script>';
+    }
+
+    echo '<div class="wrap">';
+    echo '<h1 class="wp-heading-inline">Edit Custom Data</h1>';
+    echo '<hr class="wp-header-end">';
+
+    echo '<form method="post">';
+    echo '<table class="form-table">';
+    echo '<tr>';
+    echo '<th scope="row"><label for="title">Title</label></th>';
+    echo '<td><input name="title" type="text" id="title" value="' . esc_attr($row->title) . '" class="regular-text" required></td>';
+    echo '</tr>';
+    echo '<tr>';
+    echo '<th scope="row"><label for="content">Content</label></th>';
+    echo '<td><textarea name="content" id="content" class="large-text" rows="10" required>' . esc_textarea($row->content) . '</textarea></td>';
+    echo '</tr>';
+    echo '</table>';
+
+    echo '<input type="hidden" name="custom_data_nonce" value="' . wp_create_nonce('custom_data_edit') . '">';
+    echo '<p class="submit"><input type="submit" name="submit" id="submit" class="button button-primary" value="Update"></p>';
+    echo '</form>';
+    echo '</div>';
 }
